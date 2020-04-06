@@ -1,0 +1,38 @@
+{
+  "name": "coronabot",
+  "version": "0.0.1",
+  "description": "telegram bot with covid19 data",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lunhg/sbccoronabot.git"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "coronavirus",
+    "covid-19"
+  ],
+  "author": "lunhg",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "bugs": {
+    "url": "https://github.com/lunhg/sbccoronabot/issues"
+  },
+  "homepage": "https://github.com/lunhg/sbccoronabot#readme",
+  "dependencies": {
+    "anychart": "^8.7.1",
+    "anychart-nodejs": "^1.3.8",
+    "axios": "^0.19.2",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "jsdom": "^16.2.2",
+    "querystring": "^0.2.0",
+    "telegraf": "^3.37.0",
+    "telegraf-session-mysql": "^5.1.0",
+    "winston": "^3.2.1"
+  }
+}
