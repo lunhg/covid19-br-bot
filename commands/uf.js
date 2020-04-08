@@ -1,6 +1,6 @@
 async function getUF (ctx, session){
   const __session__ = await session.getSession(ctx.from.id);
-  if(__session__.UF === undefined){
+  if(__session__.UF === undefined || __session__.UF === 'indefinida'){
     ctx.reply("Erro: Estado indefinido.");
   } else {
     ctx.reply(`Sucesso: Estado é ${__session__.UF}.`);
@@ -9,7 +9,7 @@ async function getUF (ctx, session){
 
 async function setUF(ctx, session, UF) {
   const __session__ = await session.getSession(ctx.from.id);
-  if (__session__.UF !== UF){
+  if (__session__.UF !== UF || __session__.UF ){
     session.saveSession(ctx.from.id, {
       UF: UF,
       city: __session__.city
@@ -25,10 +25,26 @@ module.exports = function(session, logger) {
     const UF = ctx.message.text.split(" ");
     const _arg_ = UF[1];
     if (_arg_ === "get" || _arg_ === "Get" || _arg_ === "GET") {
-      getUF(ctx, session);
+      session.getSession(ctx.from.id).then((s) => {
+        if(s.UF === undefined || s.UF === 'indefinida'){
+          ctx.reply("Unidade Federativa indefinida");
+        } else {
+          ctx.reply(`Sua unidade federativa, até o momento, é ${s.UF}`)
+        }
+      });
     }
     else if (_arg_ === "set" || _arg_ === "Set" || _arg_ === "SET") {
-      setUF(ctx, session, UF[2])
+      const uf = UF[2];
+      session.getSession(ctx.from.id).then((s) => {
+        session.saveSession(ctx.from.id, {
+          UF: uf,
+          city: s.city,
+          started: s.started
+        });
+        session.getSession(ctx.from.id).then((s) => {
+          ctx.reply(`Ok. ${s.UF} é a unidade federativa definida`);
+        });
+      });
     }
   };
 };

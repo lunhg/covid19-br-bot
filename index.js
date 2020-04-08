@@ -66,16 +66,6 @@ bot.use((ctx, next) => {
   next().then(() => {
     let now = new Date();
     logger.info(`${now} === Message received (${now - date}ms)`);
-    session.getSession(ctx.from.id).then((s) => {
-      now = new Date();
-      if ((!s.UF && !s.city) || (s.UF === '' && s.city === '')){
-        session.saveSession(ctx.from.id, {
-          UF: '',
-          city: ''
-        });
-        logger.info(`${now} === new sesssion created (${now - date}ms)`);
-      }
-    });
   });
 });
 
@@ -91,7 +81,21 @@ bot.command('start', (ctx) => {
     "",
     "Digite /help para começar"
   ];
-  ctx.reply(msg.join("\n"));
+  const now = new Date();
+  session.getSession(ctx.from.id).then((s) => {
+    const date = new Date();
+    if ((s.started === undefined || s.started === false) && s.UF === undefined && s.city === undefined) {
+      session.saveSession(ctx.from.id, {
+        UF: undefined,
+        city: undefined,
+        started: true
+      });
+      logger.info(`${now} === new sesssion created (${now - date}ms)`);
+    } else {
+      logger.info(`${now} === session loaded (${now - date}ms)`)
+    }
+    ctx.reply(msg.join("\n"));
+  });
 });
 
 // -----
