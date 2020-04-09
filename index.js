@@ -57,46 +57,22 @@ const session = new MySQLSession({
 // avoid crashes
 app.use(bot.webhookCallback(`/bot${process.env.BOT_TOKEN}`));
 
-// use persistent session middleware
+// use tmp and persistent session middleware
 bot.use(session.middleware());
 
+// check session middleware
+const setup = require('./lib/session');
+bot.on('text', setup(session, logger));
+
 // Register logger middleware
-bot.use((ctx, next) => {
-  const date = new Date();
-  next().then(() => {
-    let now = new Date();
-    logger.info(`${now} === Message received (${now - date}ms)`);
-  });
-});
+const botLogger = require('./lib/logger');
+bot.use(botLogger(logger));
 
 // -----
 // Start
 // -----
-bot.command('start', (ctx) => {
-  const msg = [
-    `Olá ${ctx.from.first_name}!`,
-    "Temos um grande desafio: como mitigar o coronavírus entre idosos, profissionais da saúde, profissionais de serviços essenciais, caixas, frentistas, profissionais de distribuição de água/luz, motoristas, etc.?",
-    "",
-    "Eu sou um robô com o intuito de auxiliar a população a se informar e a informar, afim de combatermos este patógeno.",
-    "",
-    "Digite /help para começar"
-  ];
-  const now = new Date();
-  session.getSession(ctx.from.id).then((s) => {
-    const date = new Date();
-    if ((s.started === undefined || s.started === false) && s.UF === undefined && s.city === undefined) {
-      session.saveSession(ctx.from.id, {
-        UF: undefined,
-        city: undefined,
-        started: true
-      });
-      logger.info(`${now} === new sesssion created (${now - date}ms)`);
-    } else {
-      logger.info(`${now} === session loaded (${now - date}ms)`)
-    }
-    ctx.reply(msg.join("\n"));
-  });
-});
+const start = require('./commands/start');
+bot.command('start', start());
 
 // -----
 // Ajuda
@@ -146,6 +122,7 @@ app.get('/', (req, res) => {
   logger.info("GET /");
   res.send('Hello World! Bot running!');
 });
+
 
 app.listen(process.env.PORT || 3000, () => {
   logger.info(`Server running on port ${process.env.PORT || 3000}`);

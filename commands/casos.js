@@ -7,9 +7,9 @@ const d3 = require('d3');
 
 function generateChart(ctx, logger, results){
   // simulate DOM
-  const html = '<svg />';
+  const html = '<body><svg /></body>';
   const dom = new JSDOM(html);
-  const svg = d3.select(dom.window.document).select('svg');
+  const body = d3.select(dom.window.document).select('body');
 
   // Sample data
   const __data__ = [];
@@ -22,10 +22,11 @@ function generateChart(ctx, logger, results){
 
   // build
   const margin = 30;
-  const width = 640;
-  const height = 320;
+  const width = 720;
+  const height = 520;
   const f = 1.6;
 
+  const svg = body.select('svg');
   svg.attr("version", "1.1")
     .attr("xmlns", d3.namespaces.svg)
     .attr("xmlns:xlink", d3.namespaces.xlink)
@@ -37,15 +38,15 @@ function generateChart(ctx, logger, results){
 
   const yScale = d3.scaleLinear()
         .range([height - (margin * f), 0])
-        .domain([0, 100]);
+        .domain([0, __data__[__data__.length - 1].value]);
 
   chart.append('g')
     .call(d3.axisLeft(yScale));
 
   const xScale = d3.scaleBand()
         .range([0, width])
-        .domain(__data__.map((s) => s.language))
-        .padding(0.2)
+        .domain(__data__.map((s) => s.date))
+        .padding(0.75)
 
   chart.append('g')
     .attr('transform', `translate(0, ${height - (margin * f)})`)
@@ -60,51 +61,48 @@ function generateChart(ctx, logger, results){
     .attr('height', (s) => height - (margin * f) - yScale(s.value))
     .attr('width', xScale.bandwidth())
 
-  const __html__ = d3.select(dom.window.document).select('svg').innerHTML;
-  //const base64 = dom.window.document.body.outerHTML.toString('base64');
-  //const img = `<img src='data:image/svg+xml;base64, ${base64} />`;
-  logger.info(__html__);
-  ctx.replyWithHTML(__html__);
-};
+  const __svg__ = dom.window.document.body.innerHTML;
+  ctx.replyWithHTML(__svg__);
+}
+
 
 module.exports = function(session, logger){
-  return function(ctx) {
-    session.getSession(ctx.from.id).then((s) => {
-      getData(logger, {
-        state: s.UF,
-        city: s.city
-      }).then((results) => {
-        if (results.length === 0){
-          ctx.reply('Nenhum dado encontrado');
-        } else {
-          const __arg__ = ctx.message.text.split("/casos ")[1];
-          if(__arg__ === "confirmados"){
-            ctx.reply(`Existem ${results[0]["confirmed"]} casos confirmados`);
-          }
-          if(__arg__ === "porcentagem"){
-            ctx.reply(`Existem ${results[0]["confirmed_per_100k_inhabitants"]}% de casos confirmados para cada 100.000 pessoas`);
-          }
-          if(__arg__ === "óbitos") {
-            ctx.reply(`${results[0]["deaths"]} óbitos computados`);
-          }
-          if(__arg__ === "lista") {
-            const msg = [
-              "Lista de data/casos:",
-              ""
-            ];
-            for (let i in results){
-              msg.push(`${results[i].date}: ${results[i].confirmed} casos`);
-            }
-            ctx.reply(msg.join("\n"));
-          }
-          if(__arg__ === "gráfico"){
-            generateChart(ctx, logger, results);
-          }
-        }
-      }).catch((e) => {
-        ctx.reply(`Ocorreu um erro: ${e.message}`);
-        logger.error(e);
-      })
+  return async function(ctx) {
+    const __arg__ = ctx.message.text.split("/casos ")[1];
+    const results = await getData(logger, {
+      state: ctx.session.state,
+      city: ctx.session.city
     });
-  }
+    if (typeof(results) === 'array' && results.length === 0){
+      ctx.reply('Nenhum dado encontrado');
+    }
+    else if(typeof(results) === 'string'){
+      ctx.reply(results);
+    }
+    else {
+      const __arg__ = ctx.message.text.split("/casos ")[1];
+      if(__arg__ === "confirmados"){
+        ctx.reply(`Existem ${results[0]["confirmed"]} casos confirmados`);
+      }
+      if(__arg__ === "porcentagem"){
+        ctx.reply(`Existem ${results[0]["confirmed_per_100k_inhabitants"]}% de casos confirmados para cada 100.000 pessoas`);
+      }
+      if(__arg__ === "óbitos") {
+        ctx.reply(`${results[0]["deaths"]} óbitos computados`);
+      }
+      if(__arg__ === "lista") {
+        const msg = [
+          "Lista de data/casos:",
+          ""
+        ];
+        for (let i in results){
+          msg.push(`${results[i].date}: ${results[i].confirmed} casos`);
+        }
+        ctx.reply(msg.join("\n"));
+      }
+      if(__arg__ === "gráfico"){
+        generateChart(ctx, logger, results);
+      }
+    }
+  };
 };
