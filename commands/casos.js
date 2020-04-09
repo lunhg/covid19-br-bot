@@ -5,14 +5,16 @@ const dateformat = require('dateformat');
 const { JSDOM } = require('jsdom');
 const d3 = require('d3');
 
-function generateChart(ctx, logger, results){
-  // simulate DOM
-  const now = new Date();
-  const __nam__ = `${ctx.from.id}${dateformat(new Date(), 'ddmmhhMMss')}`;
-  const __svg__ = path.join(__dirname, '../data', `${__nam__}.svg`);  
-  const __png__ = path.join(__dirname, '../data', `${__nam__}.png`);
-  logger.info(`${now} === Creating ${__svg__}`);
+function generateMetadata(ctx, date){
+  const obj = {
+    name: `${ctx.from.id}${dateformat(date, 'ddmmhhMMss')}`,
+  };
+  obj.svg = path.join(__dirname, '../data', `${obj.name}.svg`);
+  obj.png = path.join(__dirname, '../data', `${obj.name}.png`)
+  return obj;
+}
 
+function generateSvg(ctx, results) {
   const html = '<body><svg /></body>';
   const dom = new JSDOM(html);
   const body = d3.select(dom.window.document).select('body');
@@ -67,44 +69,52 @@ function generateChart(ctx, logger, results){
     .attr('height', (s) => height - (margin * f) - yScale(s.value))
     .attr('width', xScale.bandwidth())
 
-  const __src__ = dom.window.document.body.innerHTML;
-  let now2 = new Date();
-  logger.info(`${now2}=== Saving ${__svg__} (${now2 - now}ms)`);
-  fs.writeFileSync(__svg__, __src__);
+  return dom.window.document.body.innerHTML;
+};
 
-  now2 = new Date();
-  logger.info(`${now2} === Converting to ${__png__}`)
-  const __convert__ = require('child_process').spawn("convert", [
-    __svg__,
-    __png__
-  ]);
-  __convert__.on('exit', function(code){
-    if (code === 0){
-      now2 = new Date();
-      logger.info(`${now2} === Success, sending photo`)
-      ctx.replyWithPhoto({source: fs.readFileSync(__png__)});
-      now2 = new Date();
-      logger.info(`${now2} Deleting generated images`);       
-      const __rmsvg__ = require('child_process').spawn('rm', [
-        __svg__
-      ]);
-      __rmsvg__.on('exit', function(__code__){
-        if (__code__ === 0){
-          logger.info("SVG files deleted");
-        }
-      });
-      const __rmpng__ = require('child_process').spawn('rm', [
-        __png__
-      ]);
-      __rmpng__.on('exit', function(__code__){
-        if (__code__ === 0){
-          logger.info("PNG files deleted");
-        }
-      });
-    }
-  })
+function saveSvg(src, metadata, logger){
+  return new Promise(function(resolve, reject){
+    let now2 = new Date();
+    logger.info(`${now2} === Saving ${metadata.svg} (${now2 - metadata.now}ms)`);
+    fs.writeFile(metadata.svg, src, function(err){
+      if (err) reject(err);
+      resolve();
+    });
+  });
 }
 
+function convertSvg2Png(metadata, logger) {
+  return new Promise(function(resolve, reject){
+    let now2 = new Date();
+    logger.info(`${now2} === Converting to ${metadata.png}`)
+    const __convert__ = require('child_process').spawn("convert", [
+      metadata.svg,
+      metadata.png
+    ]);
+    __convert__.on('error', function(err){
+      reject(err)
+    });
+    __convert__.on('exit', function(code){
+      if (code === 0){
+        resolve();
+      } else {
+        reject(new Error('Unknown error'));
+      }
+    });
+  });
+}
+
+function replyWithPngImage(ctx, metadata, logger){
+  return new Promise(function(resolve, reject){
+    let now = new Date();
+    logger.info(`${now} === Success, sending photo`);
+    try {
+      ctx.replyWithPhoto({source: fs.readFileSync(metadata.png)});
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
 
 module.exports = function(session, logger){
   return async function(ctx) {
@@ -141,7 +151,21 @@ module.exports = function(session, logger){
         ctx.reply(msg.join("\n"));
       }
       if(__arg__ === "gráfico"){
-        generateChart(ctx, logger, results);
+        let date = new Date();
+        logger.info(`${date} === Generating metadata`);
+        const metadata = generateMetadata(ctx, date);
+
+        let date2 = new Date();
+        logger.info(`${date2} === Generating svg (${date2 - date}ms)`);
+        const svg = generateSvg(ctx, results);
+        try{
+          await saveSvg(svg, metadata, logger);
+          await convertSvg2Png(metadata, logger);
+          await replyWithPngImage(ctx, metadata, logger);
+        } catch (err) {
+          logger.error(err);
+          ctx.reply(err.message);
+        }
       }
     }
   };

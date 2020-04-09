@@ -115,6 +115,9 @@ bot.command('/cidade', cidade(session, logger));
 const casos = require('./commands/casos');
 bot.command('/casos', casos(session, logger));
 
+bot.catch((err, ctx) => {
+  logger.error(`Ooops, encountered an error for ${ctx.updateType}`, err)
+})
 // -----------
 // Express app
 // -----------
