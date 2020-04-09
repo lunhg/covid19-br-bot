@@ -7,8 +7,8 @@ const HELP = {
     "/whoami: diz quem eu sou e o que faço",
     "/fontes: lista todas as fontes a que tenho recurso para informar",
     "/uf <arg1 arg2?>. Ex.: /uf get; /uf set SP",
-    "/cidade <arg arg2?>. Ex.: /cidade São Paulo",
-    "/casos <arg>. Ex.: /casos confirmados; /casos porcentagem; /casos óbitos; /casos lista)"
+    "/cidade <arg arg2?>. Ex.: /cidade get; /cidade set São Paulo",
+    "/casos <arg>. Ex.: /casos confirmados; /casos porcentagem; /casos óbitos; /casos lista; /casos gráfico (EXPERIMENTAL))"
   ],
   start: [
     "Commando: /start",
@@ -70,7 +70,8 @@ const HELP = {
     "Exemplos:",
     "/casos confirmados",
     "/casos porcentagem",
-    "/casos lista"
+    "/casos lista",
+    "/casos gráfico (EXPERIMENTAL)"
   ]
 };
 
