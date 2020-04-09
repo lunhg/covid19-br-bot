@@ -92,14 +92,10 @@ function convertSvg2Png(metadata, logger) {
       metadata.png
     ]);
     __convert__.on('error', function(err){
-      reject(err)
+      reject(err);
     });
     __convert__.on('exit', function(code){
-      if (code === 0){
-        resolve();
-      } else {
-        reject(new Error('Unknown error'));
-      }
+      resolve();
     });
   });
 }
@@ -107,10 +103,11 @@ function convertSvg2Png(metadata, logger) {
 function replyWithPngImage(ctx, metadata, logger){
   return new Promise(function(resolve, reject){
     let now = new Date();
-    logger.info(`${now} === Success, sending photo`);
     try {
+      logger.info(`${now} === Success, sending photo`);      
       ctx.replyWithPhoto({source: fs.readFileSync(metadata.png)});
     } catch (err) {
+      logger.error(err);      
       reject(err);
     }
   });
