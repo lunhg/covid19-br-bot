@@ -7,6 +7,12 @@ const d3 = require('d3');
 
 function generateChart(ctx, logger, results){
   // simulate DOM
+  const now = new Date();
+  const __nam__ = `${ctx.from.id}${dateformat(new Date(), 'ddmmhhMMss')}`;
+  const __svg__ = path.join(__dirname, '../data', `${__nam__}.svg`);  
+  const __png__ = path.join(__dirname, '../data', `${__nam__}.png`);
+  logger.info(`${now} === Creating ${__svg__}`);
+
   const html = '<body><svg /></body>';
   const dom = new JSDOM(html);
   const body = d3.select(dom.window.document).select('body');
@@ -61,8 +67,42 @@ function generateChart(ctx, logger, results){
     .attr('height', (s) => height - (margin * f) - yScale(s.value))
     .attr('width', xScale.bandwidth())
 
-  const __svg__ = dom.window.document.body.innerHTML;
-  ctx.replyWithHTML(__svg__);
+  const __src__ = dom.window.document.body.innerHTML;
+  let now2 = new Date();
+  logger.info(`${now2}=== Saving ${__svg__} (${now2 - now}ms)`);
+  fs.writeFileSync(__svg__, __src__);
+
+  now2 = new Date();
+  logger.info(`${now2} === Converting to ${__png__}`)
+  const __convert__ = require('child_process').spawn("convert", [
+    __svg__,
+    __png__
+  ]);
+  __convert__.on('exit', function(code){
+    if (code === 0){
+      now2 = new Date();
+      logger.info(`${now2} === Success, sending photo`)
+      ctx.replyWithPhoto({source: fs.readFileSync(__png__)});
+      now2 = new Date();
+      logger.info(`${now2} Deleting generated images`);       
+      const __rmsvg__ = require('child_process').spawn('rm', [
+        __svg__
+      ]);
+      __rmsvg__.on('exit', function(__code__){
+        if (__code__ === 0){
+          logger.info("SVG files deleted");
+        }
+      });
+      const __rmpng__ = require('child_process').spawn('rm', [
+        __png__
+      ]);
+      __rmpng__.on('exit', function(__code__){
+        if (__code__ === 0){
+          logger.info("PNG files deleted");
+        }
+      });
+    }
+  })
 }
 
 
