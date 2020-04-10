@@ -4,6 +4,8 @@ const path = require('path');
 const dateformat = require('dateformat');
 const { JSDOM } = require('jsdom');
 const d3 = require('d3');
+const sharp = require('sharp');
+
 
 function generateMetadata(ctx, date){
   const obj = {
@@ -72,38 +74,22 @@ function generateSvg(ctx, results) {
   return dom.window.document.body.innerHTML;
 };
 
-function saveSvg(src, metadata){
+function convertSvg2Png(src) {
   return new Promise(function(resolve, reject){
-    fs.writeFile(metadata.svg, src, function(err){
-      if (err) reject(err);
-      resolve();
-    });
+    const buffer = Buffer.from(src);
+    sharp(buffer)
+      .png()
+      .toBuffer()
+      .then((output) => {
+        resolve(output)
+      })
   });
 }
 
-function convertSvg2Png(metadata) {
-  return new Promise(function(resolve, reject){
-    const __convert__ = require('child_process').spawn("convert", [
-      metadata.svg,
-      metadata.png
-    ]);
-    __convert__.on('error', function(err){
-      reject(err);
-    });
-    __convert__.on('exit', function(code){
-      fs.readFile(metadata.png, function(err, data){
-        if (err) reject(err);
-        const b64 = data.toString('base64');
-        resolve(b64);
-      });
-    });
-  });
-}
-
-function replyWithPngImage(ctx, options){
+function replyWithPngImage(ctx, b64){
   return new Promise(function(resolve, reject){
     try {
-      ctx.replyWithPhoto(options);
+      ctx.replyWithPhoto({ source: Buffer.from(b64, 'base64')});
     } catch (err) {
       ctx.logger.error(err);      
       reject(err);
@@ -154,15 +140,13 @@ module.exports = function(session, logger){
         const metadata = generateMetadata(ctx, date);
 
         let date2 = new Date();
-        ctx.logger.info(`${date2} === Generating svg (${date2 - date}ms)`);
+        ctx.logger.info(`${date2} === Generating image (${date2 - date}ms)`);
         const svg = generateSvg(ctx, results);
         try{
-          ctx.logger.info(`Saving ${metadata.svg}`);
-          await saveSvg(svg, metadata);
-          ctx.logger.info(`Converting to ${metadata.png}`);
-          const b64 = await convertSvg2Png(metadata);
+          let buf = await convertSvg2Png(svg);
+          let b64 = buf.toString('base64');
           ctx.logger.info(`replying with photo ${b64}`);
-          await replyWithPngImage(ctx, {source: Buffer.from(b64, 'base64')});
+          await replyWithPngImage(ctx, b64);
         } catch (err) {
           reply(ctx, err.message);
         }
