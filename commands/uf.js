@@ -1,18 +1,24 @@
 async function getState (ctx){
+  let msg = '';
   if(ctx.session.state === undefined){
-    ctx.reply("Erro: Estado indefinido.");
+    msg = "Erro: Estado indefinido.";
   } else {
-    ctx.reply(`Sucesso: Estado é ${ctx.session.state}.`);
+    msg = `Sucesso: Estado é ${ctx.session.state}.`;
   }
+  ctx.logger.info(msg);
+  ctx.reply(msg);
 };
 
 async function setState(ctx, state) {
+  let msg = '';
   if (ctx.session.state !== state ){
     ctx.session.state = state;
-    ctx.reply(`Ok. ${ctx.session.state} é a unidade federativa definida`);
+    msg = `Ok. ${ctx.session.state} é a unidade federativa definida`;
   } else {
-    ctx.reply("Sem necessidade de mudanças");
+    msg = "Sem necessidade de mudanças";
   }
+  ctx.logger.info(msg);
+  ctx.reply(msg);
 };
 
 module.exports = function(session, logger) {

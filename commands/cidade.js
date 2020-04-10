@@ -1,18 +1,24 @@
 async function getCity (ctx){
+  let msg = '';
   if(ctx.session.city === undefined){
-    ctx.reply("Erro: Cidade indefinida.");
+    msg = "Erro: Cidade indefinida.";
   } else {
-    ctx.reply(`Sucesso: Estado é ${ctx.session.city}.`);
+    msg = `Sucesso: Cidade é ${ctx.session.city}.`;
   }
+  ctx.logger.info(msg);
+  ctx.reply(msg);
 };
 
 async function setCity(ctx, city) {
+  let msg = '';
   if (ctx.session.city !== city ){
     ctx.session.city = city;
-    ctx.reply(`Ok. ${ctx.session.city} é a cidade definida`);
+    msg = `Ok. ${ctx.session.city} é a cidade definida`;
   } else {
-    ctx.reply("Sem necessidade de mudanças");
+    msg = "Sem necessidade de mudanças";
   }
+  ctx.logger.info(msg);
+  ctx.reply(msg);
 };
 
 module.exports = function(session, logger) {
