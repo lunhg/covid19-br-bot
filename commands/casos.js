@@ -4,8 +4,9 @@ const path = require('path');
 const dateformat = require('dateformat');
 const { JSDOM } = require('jsdom');
 const d3 = require('d3');
-const sharp = require('sharp');
-
+//const sharp = require('sharp');
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
 
 function generateMetadata(ctx, date){
   const obj = {
@@ -32,8 +33,8 @@ function generateSvg(ctx, results) {
 
   // build
   const margin = 30;
-  const width = 720;
-  const height = 520;
+  const width = 1024;
+  const height = 1024;
   const f = 1.6;
 
   const svg = body.select('svg');
@@ -56,7 +57,7 @@ function generateSvg(ctx, results) {
   const xScale = d3.scaleBand()
         .range([0, width])
         .domain(__data__.map((s) => s.date))
-        .padding(0.75)
+        .padding(0.65)
 
   chart.append('g')
     .attr('transform', `translate(0, ${height - (margin * f)})`)
@@ -76,13 +77,14 @@ function generateSvg(ctx, results) {
 
 function convertSvg2Png(src) {
   return new Promise(function(resolve, reject){
-    const buffer = Buffer.from(src);
-    sharp(buffer)
-      .png()
-      .toBuffer()
-      .then((output) => {
-        resolve(output)
-      })
+    exec(`echo '${src}' | convert svg: png:-`, {
+      encoding: 'binary',
+      maxBuffer: 2048 * 1024
+    }, function(err, stdout, stderr){
+      if(err) reject(err);
+      const buffer = Buffer.from(stdout, 'binary');
+      resolve(buffer);
+    });
   });
 }
 
@@ -148,6 +150,7 @@ module.exports = function(session, logger){
           ctx.logger.info(`replying with photo ${b64}`);
           await replyWithPngImage(ctx, b64);
         } catch (err) {
+          ctx.logger.error(err);
           reply(ctx, err.message);
         }
       }

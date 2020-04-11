@@ -63,7 +63,9 @@ bot.command('/whoami', (ctx) => {
 // -----
 bot.command('/fontes', (ctx) => {
   const msg = [
-    "Brasil.io: https://brasil.io/dataset/covid19"
+    "Conjunto de dados:: https://brasil.io/dataset/covid19",
+    "Código-fonte: https://github.com/lunhg/covid19-br-bot",
+    "Falhas e sugestões: https://github.com/lunhg/covid19-br-bot/issues"
   ];
   ctx.reply(msg.join("\n"));
 });
@@ -87,7 +89,7 @@ const casos = require('./commands/casos');
 bot.command('/casos', casos(session, logger));
 
 bot.catch((err, ctx) => {
-  ctx.logger.error(err)
+  logger.logger.error(err)
 });
 
 // -----------
