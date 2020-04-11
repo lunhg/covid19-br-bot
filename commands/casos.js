@@ -6,7 +6,7 @@ const { JSDOM } = require('jsdom');
 const d3 = require('d3');
 //const sharp = require('sharp');
 const util = require('util');
-const exec = util.promisify(require('child_process').exec);
+const exec = require('child_process').exec;
 
 function generateMetadata(ctx, date){
   const obj = {
@@ -79,7 +79,7 @@ function convertSvg2Png(src) {
   return new Promise(function(resolve, reject){
     exec(`echo '${src}' | convert svg: png:-`, {
       encoding: 'binary',
-      maxBuffer: 2048 * 1024
+      maxBuffer: 4096 * 1024
     }, function(err, stdout, stderr){
       if(err) reject(err);
       const buffer = Buffer.from(stdout, 'binary');
