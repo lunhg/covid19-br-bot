@@ -86,7 +86,7 @@ bot.command('/cidade', cidade(session, logger));
 // Casos
 // ------
 const casos = require('./commands/casos');
-bot.command('/casos', casos(session, logger));
+bot.command('/casos', casos());
 
 bot.catch((err, ctx) => {
   logger.logger.error(err)
