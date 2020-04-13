@@ -41,7 +41,7 @@ module.exports = function(){
       }
       if(__arg__ === "gráfico"){
         const svg = generateSVG(ctx, results);
-        convert(svg, ['svg:', 'png:-'], function(buffer){
+        convert(svg, ['-font', 'DejaVu-Sans', 'svg:', 'png:-'], function(buffer){
           const base64 = buffer.toString('base64');
           ctx.replyWithPhoto({
             source: Buffer.from(base64, 'base64') 
