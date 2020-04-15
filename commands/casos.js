@@ -31,17 +31,18 @@ module.exports = function(){
       }
       if(__arg__ === "lista") {
         const msg = [
-          "Lista de data/casos:",
+          "Lista de Dia : Casos",
           ""
         ];
         for (let i in results){
-          msg.push(`${results[i].date}: ${results[i].confirmed} casos`);
-        }
+          msg.push(`${results[i].date} : ${results[i].confirmed}`);
+        } 
         reply(ctx, msg.join("\n"));
+
       }
       if(__arg__ === "gráfico"){
         const svg = generateSVG(ctx, results);
-        convert(svg, ['-font', 'DejaVu-Sans', 'svg:', 'png:-'], function(buffer){
+        convert(svg, ['-font', 'DejaVu-Sans', 'svg:', 'png:-'], function(err, buffer){
           const base64 = buffer.toString('base64');
           ctx.replyWithPhoto({
             source: Buffer.from(base64, 'base64') 

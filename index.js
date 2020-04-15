@@ -54,21 +54,27 @@ bot.command('help', help());
 // ------
 // Whoami
 // ------
-bot.command('/whoami', (ctx) => {
-  ctx.reply("Eu sou um robô com o intuito de auxiliar a população a se informar e a informar, afim de combatermos este patógeno.");
-});
+const whoami = require('./commands/whoami');
+bot.command('/whoami', whoami());
 
-// -----
-// Fonts
-// -----
-bot.command('/fontes', (ctx) => {
-  const msg = [
-    "Conjunto de dados:: https://brasil.io/dataset/covid19",
-    "Código-fonte: https://github.com/lunhg/covid19-br-bot",
-    "Falhas e sugestões: https://github.com/lunhg/covid19-br-bot/issues"
-  ];
-  ctx.reply(msg.join("\n"));
-});
+// -------
+// Dataset
+// -------
+const dataset = require('./commands/dataset');
+bot.command('/dataset', dataset());
+
+
+// -------
+// Source
+// -------
+const source = require('./commands/source');
+bot.command('/source', source());
+
+// -------
+// Issues
+// -------
+const issues = require('./commands/issues');
+bot.command('/issues', issues());
 
 // ------
 // Estado

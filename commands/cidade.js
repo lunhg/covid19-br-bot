@@ -1,39 +1,44 @@
-async function getCity (ctx){
-  let msg = '';
-  if(ctx.session.city === undefined){
-    msg = "Erro: Cidade indefinida.";
-  } else {
-    msg = `Sucesso: Cidade é ${ctx.session.city}.`;
-  }
-  ctx.logger.info(msg);
-  ctx.reply(msg);
-};
-
-async function setCity(ctx, city) {
-  let msg = '';
-  if (ctx.session.city !== city ){
-    ctx.session.city = city;
-    msg = `Ok. ${ctx.session.city} é a cidade definida`;
-  } else {
-    msg = "Sem necessidade de mudanças";
-  }
-  ctx.logger.info(msg);
-  ctx.reply(msg);
-};
+const fs = require('fs');
+const path = require('path');
+const getTemplate = require('../lib/getTemplate');
+const parse = require('csv-parse')
 
 module.exports = function(session, logger) {
-  return function(ctx){
-    const cidade = ctx.message.text.split(" ");
-    const _arg_ = cidade[1];
-    if (_arg_ === "get" || _arg_ === "Get" || _arg_ === "GET") {
-      getCity(ctx);
-    }
-    else if (_arg_ === "set" || _arg_ === "Set" || _arg_ === "SET") {
-      let city = [];
-      for (let i=2; i < cidade.length; i++){
-        city.push(cidade[i]);
+  return async function(ctx){
+    const array = ctx.message.text.split(" ");
+    try{
+      if (array.length < 2){
+        if (ctx.session.city === undefined) {
+          const txt = await getTemplate('template_msg', 'cidade_get_undefined');
+          ctx.replyWithMarkdown(txt);
+        } else {
+          const txt = await getTemplate('template_msg', 'cidade_get_success');
+          const msg = txt
+                .replace(/\${city}/, ctx.session.city)
+          ctx.replyWithMarkdown(msg);
+        }
+      } else {
+        const city = array.splice(1).join(" ");
+        console.log(city)
+        if (ctx.session.city === city) {
+          const txt = await getTemplate('template_msg', 'cidade_set_same');
+          ctx.replyWithMarkdown(txt);
+        } else {
+          ctx.session.city = city;
+          const txt = await getTemplate('template_msg', 'cidade_get_success');
+          const msg = txt
+                .replace(/\${city}/, ctx.session.city)
+          ctx.replyWithMarkdown(msg);
+        }
       }
-      setCity(ctx, city.join(" "));
+    } catch(e) {
+      ctx.logger.error(e);
+      ctx.reply(e.message);
     }
-  };
-};
+  }
+}
+
+
+
+
+
