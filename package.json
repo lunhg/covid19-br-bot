@@ -139,7 +139,7 @@
     "jsprim": "^1.4.1",
     "kuler": "^1.0.1",
     "levn": "^0.3.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "lodash.sortby": "^4.7.0",
     "logform": "^2.1.2",
     "markdown": "^0.5.0",
