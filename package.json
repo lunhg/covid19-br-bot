@@ -223,7 +223,7 @@
     "winston": "^3.2.1",
     "winston-transport": "^4.3.0",
     "word-wrap": "^1.2.3",
-    "ws": "^7.2.3",
+    "ws": "^7.4.6",
     "xml-name-validator": "^3.0.0",
     "xmlchars": "^2.2.0"
   },
