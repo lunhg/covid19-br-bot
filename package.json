@@ -12,7 +12,7 @@
     "acorn": "^7.1.1",
     "acorn-globals": "^6.0.0",
     "acorn-walk": "^7.1.1",
-    "ajv": "^6.12.0",
+    "ajv": "^6.12.3",
     "anychart": "^8.7.1",
     "array-flatten": "^1.1.1",
     "asn1": "^0.2.4",
