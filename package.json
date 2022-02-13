@@ -110,7 +110,7 @@
     "fast-safe-stringify": "^2.0.7",
     "fecha": "^2.3.3",
     "finalhandler": "^1.1.2",
-    "follow-redirects": "^1.5.10",
+    "follow-redirects": "^1.14.8",
     "forever-agent": "^0.6.1",
     "form-data": "^2.3.3",
     "forwarded": "^0.1.2",
