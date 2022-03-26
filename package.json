@@ -149,7 +149,7 @@
     "mime": "^1.6.0",
     "mime-db": "^1.43.0",
     "mime-types": "^2.1.26",
-    "minimist": "^1.2.5",
+    "minimist": "^1.2.6",
     "module-alias": "^2.2.2",
     "ms": "^2.0.0",
     "mysql": "^2.18.1",
